@@ -1,132 +1,48 @@
-import time
-import re
-import webbrowser
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
-from memory import (
-    salvar_mensagem,
-    bloquear_contato,
-    desbloquear_contato,
-    registrar_log,
-    responder_com_gemini, contatos, SessionUsers
-)
+import pywhatkit
+from openpyxl import load_workbook, Workbook
+from tkinter import filedialog
+import os
+from pathlib import Path
 
-driver = None
+WHATSAPP_PATH = Path.home() / "Documents" / "contatos_whatsapp.xlsx"
 
-def abrir_whatsapp_web():
-    url = "https://web.whatsapp.com"
-    webbrowser.open(url)
-    return "WhatsApp Web aberto no navegador padrão. Escaneie o QR e use normalmente."
+def carregar_contatos_whatsapp():
+    if not os.path.exists(WHATSAPP_PATH):
+        wb = Workbook()
+        ws = wb.active
+        ws.append(["Nome", "Número WhatsApp"])
+        wb.save(WHATSAPP_PATH)
 
-def buscar_contato_elemento(nome):
-    global driver
-    try:
-        caixa_pesquisa = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')
-        caixa_pesquisa.clear()
-        caixa_pesquisa.send_keys(nome)
-        time.sleep(2)
-        contato = driver.find_element(By.XPATH, f'//span[@title="{nome}"]')
-        return contato
-    except NoSuchElementException:
-        return None
+    wb = load_workbook(WHATSAPP_PATH)
+    ws = wb.active
+    return [(row[0].value, row[1].value) for row in ws.iter_rows(min_row=2, values_only=True) if row[1].value]
 
-def enviar_mensagem(username, contato_nome, mensagem):
-    global driver
-    if not driver:
-        return "WhatsApp não iniciado. Use 'iniciar whatsapp' antes."
+def adicionar_contato_whatsapp():
+    nome = input("Nome do contato: ")
+    numero = input("Número do WhatsApp (com +55...): ")
+    
+    wb = load_workbook(WHATSAPP_PATH)
+    ws = wb.active
+    ws.append([nome, numero])
+    wb.save(WHATSAPP_PATH)
+    print(f"Contato {nome} adicionado com sucesso!")
 
-    contato = buscar_contato_elemento(contato_nome)
-    if not contato:
-        return f"Contato '{contato_nome}' não encontrado."
+def gerar_mensagem_com_gemini(prompt):
+    # Placeholder - troque pela tua chamada Gemini
+    return f"Mensagem gerada a partir do prompt: '{prompt}'"
 
-    contato.click()
-    time.sleep(1)
+def enviar_mensagens_whatsapp():
+    contatos = carregar_contatos_whatsapp()
+    if not contatos:
+        print("Nenhum contato encontrado.")
+        return
 
-    try:
-        # Enviar mensagem original
-        caixa_msg = driver.find_element(By.XPATH, '//div[@contenteditable="true"][@data-tab="10"]')
-        caixa_msg.click()
-        caixa_msg.send_keys(mensagem + Keys.ENTER)
-        time.sleep(1)
-        salvar_mensagem(username, contato_nome, None, 'enviado', mensagem)
-        registrar_log(username, f"Mensagem enviada para {contato_nome}: {mensagem[:50]}")
+    prompt = input("O que você quer dizer na mensagem? ")
+    mensagem = gerar_mensagem_com_gemini(prompt)
 
-        # Gerar resposta automática com Gemini
-        resposta_gemini = responder_com_gemini(mensagem, username)
-        if resposta_gemini:
-            # Enviar resposta gerada pelo Gemini
-            caixa_msg.click()
-            caixa_msg.send_keys(resposta_gemini + Keys.ENTER)
-            time.sleep(1)
-            salvar_mensagem(username, contato_nome, None, 'recebido', resposta_gemini)
-            registrar_log(username, f"Resposta Gemini enviada para {contato_nome}: {resposta_gemini[:50]}")
-
-        return f"Mensagem enviada para '{contato_nome}' e resposta automática enviada pelo Gemini."
-
-    except NoSuchElementException:
-        return "Erro: caixa de mensagem não encontrada."
-
-def listar_contatos(username):
-    session = SessionUsers()
-    try:
-        contatos_list = session.query(contatos).filter(contatos.c.username == username).all()
-        resultado = [{"nome": c.nome, "numero": c.numero} for c in contatos_list]
-        return resultado
-    except Exception as e:
-        return []
-    finally:
-        session.close()
-
-def editar_contato(username, nome_antigo, novo_nome):
-    session = SessionUsers()
-    try:
-        contato = session.query(contatos).filter(
-            contatos.c.username == username,
-            contatos.c.nome == nome_antigo
-        ).first()
-        if not contato:
-            return f"Contato '{nome_antigo}' não encontrado."
-        session.execute(
-            contatos.update().where(
-                (contatos.c.username == username) & 
-                (contatos.c.nome == nome_antigo)
-            ).values(nome=novo_nome)
-        )
-        session.commit()
-        registrar_log(username, f"Contato '{nome_antigo}' renomeado para '{novo_nome}'")
-        return f"Contato '{nome_antigo}' renomeado para '{novo_nome}'."
-    except Exception as e:
-        return f"Erro ao editar contato: {e}"
-    finally:
-        session.close()
-
-def apagar_contato(username, nome):
-    session = SessionUsers()
-    try:
-        contato = session.query(contatos).filter(
-            contatos.c.username == username,
-            contatos.c.nome == nome
-        ).first()
-        if not contato:
-            return f"Contato '{nome}' não encontrado."
-        session.execute(
-            contatos.delete().where(
-                (contatos.c.username == username) & 
-                (contatos.c.nome == nome)
-            )
-        )
-        session.commit()
-        registrar_log(username, f"Contato '{nome}' apagado")
-        return f"Contato '{nome}' apagado."
-    except Exception as e:
-        return f"Erro ao apagar contato: {e}"
-    finally:
-        session.close()
-
-def bloquear_contato_cmd(username, contato_nome):
-    return bloquear_contato(username, contato_nome)
-
-def desbloquear_contato_cmd(username, contato_nome):
-    return desbloquear_contato(username, contato_nome)
+    for nome, numero in contatos:
+        try:
+            print(f"Enviando para {nome} ({numero})...")
+            pywhatkit.sendwhatmsg_instantly(numero, mensagem, wait_time=10, tab_close=True)
+        except Exception as e:
+            print(f"Erro ao enviar para {numero}: {e}")

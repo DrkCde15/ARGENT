@@ -1011,14 +1011,8 @@ def responder_com_gemini_fallback(match, username):
 
 # ========== Lista de padrões e ações ==========
 padroes = [
-    # Abrir o WhatsApp Web
-    (re.compile(r'^(executar|iniciar|abrir)whatsapp$', re.IGNORECASE), lambda u, g: whatsapp.iniciar_whatsapp(u)),
-    (re.compile(r'^enviar mensagem\s+(.+?)\s+(.+)$', re.IGNORECASE), lambda u, g: whatsapp.enviar_mensagem(u, g.group(1), g.group(2))),
-    (re.compile(r'^(listar|mostrar|exibir) contatos$', re.IGNORECASE), lambda u, g: whatsapp.listar_contatos(u)),
-    (re.compile(r'^editar contato (\w+) (\w+)$', re.IGNORECASE), lambda u, g: whatsapp.editar_contato(u, g.group(1), g.group(2))),
-    (re.compile(r'^apagar contato (\w+)$', re.IGNORECASE), lambda u, g: whatsapp.apagar_contato(u, g.group(1))),
-    (re.compile(r'^bloquear contato (\w+)$', re.IGNORECASE), lambda u, g: whatsapp.bloquear_contato_cmd(u, g.group(1))),
-    (re.compile(r'^desbloquear contato (\w+)$', re.IGNORECASE), lambda u, g: whatsapp.desbloquear_contato_cmd(u, g.group(1))),
+    
+    
 
     # Listar aplicativos
     (re.compile(r'\b(listar|mostrar|exibir)\s+(os\s+)?aplicativos\b', re.IGNORECASE), listar_aplicativos),
