@@ -1,0 +1,13 @@
+{
+    "vscode": "start code",
+    "brave": "start brave",
+    "google": "start chrome",
+    "word": "start winword",
+    "excel": "start excel",
+    "notepad": "start notepad",
+    "calculadora": "start calc",
+    "paint": "start mspaint",
+    "explorador": "start explorer",
+    "prompt": "start cmd",
+    "powershell": "start powershell"
+}
