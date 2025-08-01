@@ -20,6 +20,7 @@ import google.generativeai as genai
 from PIL import Image
 from memory import limpar_memoria_do_usuario, responder_com_gemini
 import whatsapp
+import email
 import fitz
 from docx import Document
 from pptx import Presentation
@@ -1011,8 +1012,11 @@ def responder_com_gemini_fallback(match, username):
 
 # ========== Lista de padrões e ações ==========
 padroes = [
-    
-    
+        # Comandos de mensagens (WhatsApp e Email)
+    (re.compile(r'\b(adicionar|inserir)\s+(contato\s+)?(whatsapp|zap)\b', re.IGNORECASE), whatsapp.adicionar_contato_whatsapp),
+    (re.compile(r'\b(enviar|disparar)\s+(mensagens?|msg)?\s+(no\s+)?(whatsapp|zap)\b', re.IGNORECASE), whatsapp.enviar_mensagens_whatsapp),
+    (re.compile(r'\b(adicionar|inserir)\s+(email|endereço de email)\b', re.IGNORECASE), email.adicionar_contato_email),
+    (re.compile(r'\b(enviar|disparar)\s+(mensagens?|emails?)\b', re.IGNORECASE), email.enviar_emails),
 
     # Listar aplicativos
     (re.compile(r'\b(listar|mostrar|exibir)\s+(os\s+)?aplicativos\b', re.IGNORECASE), listar_aplicativos),
