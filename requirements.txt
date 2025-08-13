@@ -1,0 +1,39 @@
+# Interface gráfica e utilitários
+customtkinter
+tkinterweb
+
+# Web scraping e downloads
+beautifulsoup4
+yt-dlp
+requests
+
+# Automação
+pyautogui
+pyperclip
+
+# IA e memória
+google-generativeai
+langchain
+langchain-community
+langchain-core
+SQLAlchemy
+
+# Voz
+SpeechRecognition
+pyttsx3
+pyaudio
+
+# Manipulação de arquivos
+pandas
+openpyxl
+python-docx
+python-pptx
+PyPDF2
+pillow
+pymupdf
+
+# Banco de dados e variáveis de ambiente
+python-dotenv
+
+# Outras dependências úteis
+pyfiglet

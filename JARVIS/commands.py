@@ -19,7 +19,6 @@ import pandas as pd
 import google.generativeai as genai
 from PIL import Image
 from memory import limpar_memoria_do_usuario, responder_com_gemini
-import email
 import fitz
 from docx import Document
 from pptx import Presentation
