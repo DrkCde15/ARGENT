@@ -39,36 +39,6 @@ usuarios = Table(
     Column("senha_hash", String),
 )
 
-contatos = Table(
-    "contatos", metadata_users,
-    Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("username", String, nullable=False),
-    Column("nome", String, nullable=False),
-    Column("numero", String, nullable=False),
-    Column("criado_em", DateTime, default=datetime.utcnow),
-)
-
-# Novas tabelas para mensagens e bloqueios
-mensagens = Table(
-    "mensagens", metadata_users,
-    Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("username", String, nullable=False),         # Usuário do sistema (dono do WhatsApp)
-    Column("contato_nome", String, nullable=False),
-    Column("contato_numero", String, nullable=True),
-    Column("direcao", String, nullable=False),          # 'enviado' ou 'recebido'
-    Column("texto", Text, nullable=False),
-    Column("timestamp", DateTime, default=datetime.utcnow),
-)
-
-bloqueados = Table(
-    "bloqueados", metadata_users,
-    Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("username", String, nullable=False),
-    Column("contato_nome", String, nullable=False),
-    Column("contato_numero", String, nullable=True),
-    Column("bloqueado_em", DateTime, default=datetime.utcnow),
-)
-
 metadata_users.create_all(engine_usuarios)
 
 logs = Table(
@@ -123,6 +93,134 @@ def autenticar_usuario(username, senha):
     finally:
         session.close()
 
+# ========= NOVAS FUNÇÕES DE ALTERAÇÃO ========= #
+
+def verificar_usuario_existe(username):
+    """Verifica se um username já existe no sistema"""
+    session = SessionUsers()
+    try:
+        user = session.query(usuarios).filter_by(username=username).first()
+        return user is not None
+    finally:
+        session.close()
+
+def atualizar_senha_usuario(username, nova_senha):
+    """Atualiza a senha do usuário no sistema"""
+    session = SessionUsers()
+    try:
+        user = session.query(usuarios).filter_by(username=username).first()
+        if not user:
+            raise Exception("Usuário não encontrado")
+        
+        # Atualiza a senha com hash
+        session.execute(
+            usuarios.update()
+            .where(usuarios.c.username == username)
+            .values(senha_hash=hash_senha(nova_senha))
+        )
+        session.commit()
+        registrar_log(username, "Senha alterada com sucesso")
+        return True
+    except Exception as e:
+        session.rollback()
+        registrar_log(username, f"Erro ao alterar senha: {e}")
+        raise Exception(f"Erro ao salvar alterações da senha: {e}")
+    finally:
+        session.close()
+
+def atualizar_username_usuario(username_antigo, username_novo):
+    """Atualiza o username do usuário no sistema"""
+    session = SessionUsers()
+    try:
+        # Verifica se o usuário antigo existe
+        user_antigo = session.query(usuarios).filter_by(username=username_antigo).first()
+        if not user_antigo:
+            raise Exception("Usuário antigo não encontrado")
+        
+        # Verifica se o novo username já existe
+        user_novo = session.query(usuarios).filter_by(username=username_novo).first()
+        if user_novo:
+            raise Exception("Novo username já existe")
+        
+        # Salva a senha do usuário antigo
+        senha_hash = user_antigo.senha_hash
+        
+        # Remove o usuário antigo
+        session.execute(usuarios.delete().where(usuarios.c.username == username_antigo))
+        
+        # Cria o usuário com o novo username
+        session.execute(usuarios.insert().values(
+            username=username_novo,
+            senha_hash=senha_hash
+        ))
+        
+        session.commit()
+        
+        # Migra dados relacionados
+        migrar_dados_usuario(username_antigo, username_novo)
+        
+        # Registra logs
+        registrar_log(username_novo, f"Username alterado de '{username_antigo}' para '{username_novo}'")
+        registrar_log(username_antigo, f"Username alterado para '{username_novo}' - conta migrada")
+        
+        return True
+        
+    except Exception as e:
+        session.rollback()
+        registrar_log(username_antigo, f"Erro ao alterar username: {e}")
+        raise Exception(f"Erro ao salvar alterações do username: {e}")
+    finally:
+        session.close()
+
+def migrar_dados_usuario(username_antigo, username_novo):
+    """
+    Migra dados específicos do usuário quando o username é alterado
+    Inclui memória de chat e outros dados relacionados
+    """
+    try:
+        # Migra a memória de chat do SQLChatMessageHistory
+        migrar_memoria_chat(username_antigo, username_novo)
+        
+        # Aqui você pode adicionar outras migrações se necessário
+        # Exemplo: arquivos específicos, configurações, etc.
+        
+        print(f"✅ Dados do usuário migrados: {username_antigo} → {username_novo}")
+        
+    except Exception as e:
+        print(f"Aviso: Erro ao migrar alguns dados do usuário: {e}")
+        registrar_log(username_novo, f"Erro parcial na migração de dados: {e}")
+
+def migrar_memoria_chat(username_antigo, username_novo):
+    """
+    Migra o histórico de chat do usuário antigo para o novo username
+    """
+    try:
+        # Obtém a conexão com o banco de chat
+        from sqlalchemy import text
+        
+        with engine_chat.connect() as conn:
+            # Verifica se existem mensagens para o usuário antigo
+            result = conn.execute(
+                text("SELECT COUNT(*) FROM message_store WHERE session_id = :old_session"),
+                {"old_session": username_antigo}
+            )
+            count = result.scalar()
+            
+            if count > 0:
+                # Atualiza o session_id das mensagens
+                conn.execute(
+                    text("UPDATE message_store SET session_id = :new_session WHERE session_id = :old_session"),
+                    {"new_session": username_novo, "old_session": username_antigo}
+                )
+                conn.commit()
+                print(f"✅ Migradas {count} mensagens de chat")
+            else:
+                print("ℹ️ Nenhuma mensagem de chat para migrar")
+                
+    except Exception as e:
+        print(f"⚠️ Erro ao migrar memória de chat: {e}")
+        # Não levanta exceção para não interromper o processo principal
+
 # ========= MEMÓRIA DO USUÁRIO ========= #
 
 def iniciar_sessao_usuario(username):
@@ -146,87 +244,6 @@ def limpar_memoria_do_usuario(username):
         registrar_log(username, f"Erro ao apagar memória: {e}")
         return f"Erro ao limpar a memória: {e}"
 
-# ---------- Funções para mensagens e bloqueios ----------
-
-def salvar_mensagem(username, contato_nome, contato_numero, direcao, texto):
-    session = SessionUsers()
-    try:
-        session.execute(mensagens.insert().values(
-            username=username,
-            contato_nome=contato_nome,
-            contato_numero=contato_numero,
-            direcao=direcao,
-            texto=texto,
-            timestamp=datetime.utcnow()
-        ))
-        session.commit()
-        registrar_log(username, f"Mensagem {direcao} para {contato_nome}: {texto[:50]}")
-    except Exception as e:
-        registrar_log(username, f"Erro ao salvar mensagem: {e}")
-    finally:
-        session.close()
-
-def listar_mensagens(username, contato_nome=None):
-    session = SessionUsers()
-    try:
-        query = session.query(mensagens).filter(mensagens.c.username == username)
-        if contato_nome:
-            query = query.filter(mensagens.c.contato_nome == contato_nome)
-        resultados = query.order_by(mensagens.c.timestamp.desc()).all()
-        return [{
-            "contato_nome": m.contato_nome,
-            "contato_numero": m.contato_numero,
-            "direcao": m.direcao,
-            "texto": m.texto,
-            "timestamp": m.timestamp.isoformat()
-        } for m in resultados]
-    finally:
-        session.close()
-
-def bloquear_contato(username, contato_nome, contato_numero=None):
-    session = SessionUsers()
-    try:
-        existe = session.query(bloqueados).filter(
-            bloqueados.c.username == username,
-            bloqueados.c.contato_nome == contato_nome
-        ).first()
-        if existe:
-            return f"Contato '{contato_nome}' já está bloqueado."
-        session.execute(bloqueados.insert().values(
-            username=username,
-            contato_nome=contato_nome,
-            contato_numero=contato_numero,
-            bloqueado_em=datetime.utcnow()
-        ))
-        session.commit()
-        registrar_log(username, f"Contato bloqueado: {contato_nome}")
-        return f"Contato '{contato_nome}' bloqueado com sucesso."
-    except Exception as e:
-        registrar_log(username, f"Erro ao bloquear contato: {e}")
-        return f"Erro ao bloquear contato: {e}"
-    finally:
-        session.close()
-
-def desbloquear_contato(username, contato_nome):
-    session = SessionUsers()
-    try:
-        deletado = session.execute(
-            bloqueados.delete().where(
-                (bloqueados.c.username == username) &
-                (bloqueados.c.contato_nome == contato_nome)
-            )
-        )
-        session.commit()
-        if deletado.rowcount == 0:
-            return f"Contato '{contato_nome}' não estava bloqueado."
-        registrar_log(username, f"Contato desbloqueado: {contato_nome}")
-        return f"Contato '{contato_nome}' desbloqueado com sucesso."
-    except Exception as e:
-        registrar_log(username, f"Erro ao desbloquear contato: {e}")
-        return f"Erro ao desbloquear contato: {e}"
-    finally:
-        session.close()
-
 # ========= GEMINI ========= #
 
 def responder_com_gemini(input_usuario, username, tentativas=3, espera=10):
@@ -249,7 +266,7 @@ def responder_com_gemini(input_usuario, username, tentativas=3, espera=10):
             for msg in mensagens
         ])
         prompt = (
-            "Você é o JARVIS, um assistente pessoal inteligente, frio, direto e sempre vai direto ao ponto sem enrolação\n"
+            "Você é o JARVIS, um assistente pessoal altamente inteligente\n"
             "Responda em português, sempre chamando o usuário de Senhor.\n"
             f"Histórico:\n{historico_formatado}\n"
             f"Usuário: {input_usuario}\n"

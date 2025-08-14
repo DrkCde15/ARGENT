@@ -1041,7 +1041,7 @@ padroes = [
      lambda m, u: parar_gravacao_sistema()),
     
     # Abrir sites e aplicativos
-    (re.compile(r'\b(iniciar|abrir|executar)\s+(youtube|netflix|microsoft teams|github|instagram|tik\s*tok|e-?mail|email)\b', re.IGNORECASE), 
+    (re.compile(r'\b(iniciar|abrir|executar)\s+(youtube|netflix|microsoft teams|github|instagram|tik\s*tok|e-?mail|email|whatsapp)\b', re.IGNORECASE), 
      abrir_site),
     (re.compile(r'\b(executar|abrir|iniciar)\s+(notepad|google|brave|word|excel|powerpoint|vscode|explorador|prompt|powershell)\b', re.IGNORECASE), 
      abrir_aplicativo),
