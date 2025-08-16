@@ -649,23 +649,106 @@ def processar_resposta_insercao(comando, username):
         return f"Tarefa '{tarefa}' adicionada para o dia {data} às {hora}, senhor."
 
 # ========== Abrir aplicativos ==========
-def abrir_aplicativo(match, username):
+def abrir_aplicativo(match, username=None):
+    """Abre um aplicativo pelo nome. Adiciona automaticamente se não estiver no JSON"""
     nome = match.group(2).lower()
-    try:
-        with open('./config/aplicativos.json', 'r', encoding='utf-8') as f:
-            apps = json.load(f)
-    except Exception as e:
-        return f"Erro ao carregar lista de aplicativos: {e}"
+    apps = carregar_apps()
 
-    for chave in apps:
-        if nome in chave.lower() or chave.lower() in nome:
-            try:
+    if nome in apps:
+        os.system(apps[nome])
+        return f"Abrindo {nome}, senhor."
+    else:
+        # procura no sistema
+        encontrados = escanear_programas()
+        for chave, caminho in encontrados.items():
+            if nome in chave.lower():
+                apps[chave] = f'start "" "{caminho}"'
+                salvar_json(apps)
                 os.system(apps[chave])
-                return f"Abrindo {chave}, senhor."
-            except Exception as e:
-                return f"Erro ao abrir aplicativo {chave}: {e}"
-    return f"Aplicativo '{nome}' não encontrado, senhor."
+                return f"Abrindo {chave}, senhor (adicionado ao JSON)."
+        return f"Aplicativo '{nome}' não encontrado, senhor."
 
+
+#========== Atualizar aplicativos ==========
+JSON_FILE = './config/apps.json'
+PROGRAM_PATHS = [
+    os.environ.get("ProgramFiles", r"C:\Program Files"),
+    os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")
+]
+EXT_EXECUTAVEIS = [".exe"]
+
+APPS_INICIAIS = {
+    "notepad": "start notepad.exe",
+    "google": "start chrome.exe",
+    "brave": "start brave.exe",
+    "word": "start winword.exe",
+    "excel": "start excel.exe",
+    "powerpoint": "start powerpnt.exe",
+    "vscode": "start code.exe",
+    "explorador": "start explorer.exe",
+    "prompt": "start cmd.exe",
+    "powershell": "start powershell.exe"
+}
+
+# =================== FUNÇÕES ===================
+JSON_FILE = './config/apps.json'
+PROGRAM_PATHS = [
+    os.environ.get("ProgramFiles", r"C:\Program Files"),
+    os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")
+]
+EXT_EXECUTAVEIS = [".exe"]
+
+APPS_INICIAIS = {
+    "notepad": "start notepad.exe",
+    "google": "start chrome.exe",
+    "brave": "start brave.exe",
+    "word": "start winword.exe",
+    "excel": "start excel.exe",
+    "powerpoint": "start powerpnt.exe",
+    "vscode": "start code.exe",
+    "explorador": "start explorer.exe",
+    "prompt": "start cmd.exe",
+    "powershell": "start powershell.exe"
+}
+
+# =================== FUNÇÕES ===================
+def escanear_programas():
+    """Escaneia Program Files e retorna dict nome -> caminho"""
+    apps = {}
+    for base_path in PROGRAM_PATHS:
+        if not os.path.exists(base_path):
+            continue
+        for root, dirs, files in os.walk(base_path):
+            for file in files:
+                nome, ext = os.path.splitext(file)
+                if ext.lower() in EXT_EXECUTAVEIS:
+                    key = nome.lower()
+                    caminho_completo = os.path.join(root, file)
+                    if key not in apps:
+                        apps[key] = caminho_completo
+    return apps
+
+def salvar_json(apps):
+    """Salva apps no JSON"""
+    os.makedirs(os.path.dirname(JSON_FILE), exist_ok=True)
+    with open(JSON_FILE, 'w', encoding='utf-8') as f:
+        json.dump(apps, f, indent=4)
+
+def carregar_apps():
+    """Carrega apps do JSON ou cria padrão se não existir"""
+    if os.path.exists(JSON_FILE):
+        with open(JSON_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    else:
+        salvar_json(APPS_INICIAIS)
+        return APPS_INICIAIS.copy()
+
+def atualizar_apps(match=None, username=None):
+    """Atualiza JSON com apps escaneados + apps iniciais"""
+    apps_scan = escanear_programas()
+    apps = {**apps_scan, **APPS_INICIAIS}
+    salvar_json(apps)
+    return f"Lista de aplicativos atualizada: {len(apps)} apps encontrados."
 # ========== Abrir sites ==========
 def abrir_site(match, username):
     comando = match.group(0).lower()
@@ -793,7 +876,7 @@ def abrir_pasta(match, username):
 # ========== Listagem ==========
 def listar_aplicativos(match, username):
     try:
-        with open('./config/aplicativos.json', 'r', encoding='utf-8') as f:
+        with open('./config/apps.json', 'r', encoding='utf-8') as f:
             apps = json.load(f)
     except Exception as e:
         return f"Erro ao carregar lista de aplicativos: {e}"
@@ -1006,8 +1089,6 @@ def limpar_memoria_do_usuario_command(match, username):
 def responder_com_gemini_fallback(match, username):
     comando = match.group(0)
     return responder_com_gemini(comando, username)
-
-
 # ========== Lista de padrões e ações ==========
 padroes = [
     # Listar aplicativos
@@ -1043,8 +1124,12 @@ padroes = [
     # Abrir sites e aplicativos
     (re.compile(r'\b(iniciar|abrir|executar)\s+(youtube|netflix|microsoft teams|github|instagram|tik\s*tok|e-?mail|email|whatsapp)\b', re.IGNORECASE), 
      abrir_site),
+    
     (re.compile(r'\b(executar|abrir|iniciar)\s+(notepad|google|brave|word|excel|powerpoint|vscode|explorador|prompt|powershell)\b', re.IGNORECASE), 
      abrir_aplicativo),
+    
+    # Atualizar aplicativos
+    (re.compile(r'\b(atualizar|atualizar\s+apps|atualizar\s+aplicativos)\b', re.IGNORECASE), atualizar_apps),
     
     # Analisar imagens
     (re.compile(r'\banalisar\s+imagem\s+(.+)', re.IGNORECASE), 
