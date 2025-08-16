@@ -12,8 +12,8 @@ Seja para abrir aplicativos, analisar arquivos, criar códigos, enviar mensagens
 
 ## 🚀 Funcionalidades
 
-✅ **Controle por Voz e Texto** – Interaja de forma natural.
-✅ **Configurações de Usúario** – Alteração de username e senha.
+✅ **Controle por Voz e Texto** – Interaja de forma natural.   
+✅ **Configurações de Usúario** – Alteração de username e senha.   
 ✅ **Integração com Gemini** – Respostas inteligentes e criação de conteúdos automáticos.   
 ✅ **Abrir Sites, Apps e Pastas** – Apenas diga ou digite o comando.  
 ✅ **Gerenciamento de Agenda (Excel)** – Criar, listar e alertar tarefas.  
