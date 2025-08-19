@@ -15,13 +15,13 @@ Seja para abrir aplicativos, analisar arquivos, criar códigos, enviar mensagens
 ✅ **Controle por Voz e Texto** – Interaja de forma natural.   
 ✅ **Configurações de Usúario** – Alteração de username e senha.   
 ✅ **Integração com Gemini** – Respostas inteligentes e criação de conteúdos automáticos.   
-✅ **Abrir Sites, Apps e Pastas** – Apenas diga ou digite o comando.  
-✅ **Gerenciamento de Agenda (Excel)** – Criar, listar e alertar tarefas.  
+✅ **Abrir Sites, Apps e Pastas** – Apenas diga ou digite o comando("abrir pasta documentos", "abrir netflix", "acessar word").  
+✅ **Gerenciamento de Agenda (Excel)** – Criar, listar e adicionar tarefas.  
 ✅ **Leitura e Análise de Arquivos** – PDF, DOCX, PPTX, XLSX e mais.  
-✅ **Criação Automática de Código** – Informe a linguagem e a descrição.   
+✅ **Criação Automática de Código** – Informe a linguagem e a descrição(py, java, js, php, c, html).   
 ✅ **Memória Contextual** – Mantém o contexto durante a sessão.  
 ✅ **Análise de Imagens** – Analise de imagens com integração do Gemini.  
-✅ **Notificador de Tarefas** – Com som de alerta e verificação de pendências.  
+✅ **Notificador de Tarefas** – Com alerta e verificação de pendências na agenda.  
 
 ---
 
