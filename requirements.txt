@@ -1,6 +1,5 @@
-# Interface gráfica e utilitários
-customtkinter
-tkinterweb
+# Aba de notificações
+tkinter
 
 # Web scraping e downloads
 beautifulsoup4

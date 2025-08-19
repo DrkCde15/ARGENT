@@ -7,7 +7,7 @@ import uuid
 import base64
 from datetime import datetime
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, String, Table, MetaData, Text, DateTime, Integer
+from sqlalchemy import create_engine, Column, String, Table, MetaData, Text, DateTime
 from sqlalchemy.orm import sessionmaker
 import google.generativeai as genai
 from langchain_community.chat_message_histories import SQLChatMessageHistory
@@ -184,7 +184,7 @@ def migrar_dados_usuario(username_antigo, username_novo):
         # Aqui você pode adicionar outras migrações se necessário
         # Exemplo: arquivos específicos, configurações, etc.
         
-        print(f"✅ Dados do usuário migrados: {username_antigo} → {username_novo}")
+        print(f"Dados do usuário migrados: {username_antigo} → {username_novo}")
         
     except Exception as e:
         print(f"Aviso: Erro ao migrar alguns dados do usuário: {e}")
@@ -213,12 +213,12 @@ def migrar_memoria_chat(username_antigo, username_novo):
                     {"new_session": username_novo, "old_session": username_antigo}
                 )
                 conn.commit()
-                print(f"✅ Migradas {count} mensagens de chat")
+                print(f"Migradas {count} mensagens de chat")
             else:
-                print("ℹ️ Nenhuma mensagem de chat para migrar")
+                print("Nenhuma mensagem de chat para migrar")
                 
     except Exception as e:
-        print(f"⚠️ Erro ao migrar memória de chat: {e}")
+        print(f"Erro ao migrar memória de chat: {e}")
         # Não levanta exceção para não interromper o processo principal
 
 # ========= MEMÓRIA DO USUÁRIO ========= #
@@ -266,7 +266,7 @@ def responder_com_gemini(input_usuario, username, tentativas=3, espera=10):
             for msg in mensagens
         ])
         prompt = (
-            "Você é o JARVIS, um assistente pessoal altamente inteligente\n"
+            "Você é o JARVIS, um assistente pessoal altamente inteligente, profissional e da respostas completas \n"
             "Responda em português, sempre chamando o usuário de Senhor.\n"
             f"Histórico:\n{historico_formatado}\n"
             f"Usuário: {input_usuario}\n"

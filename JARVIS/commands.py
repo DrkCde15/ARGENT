@@ -18,7 +18,7 @@ from datetime import datetime
 import pandas as pd
 import google.generativeai as genai
 from PIL import Image
-from memory import limpar_memoria_do_usuario, responder_com_gemini
+from memory import limpar_memoria_do_usuario, responder_com_gemini, registrar_log
 import fitz
 from docx import Document
 from pptx import Presentation
@@ -433,7 +433,6 @@ class ImageAnalyser:
             resposta_texto = response.text.strip()
 
             # Log e memória
-            from memory import registrar_log
             registrar_log(username, f"Análise de imagem: {image_path}")
             registrar_log(username, f"Resultado: {resposta_texto}")
 
@@ -669,7 +668,7 @@ def abrir_aplicativo(match, username=None):
         return f"Aplicativo '{nome}' não encontrado, senhor."
 
 
-#========== Atualizar aplicativos ==========
+#========== Atualizar lista de aplicativos ==========
 JSON_FILE = './config/apps.json'
 PROGRAM_PATHS = [
     os.environ.get("ProgramFiles", r"C:\Program Files"),
@@ -760,6 +759,7 @@ def abrir_site(match, username):
         "instagram": "https://www.instagram.com",
         "whatsapp": "https://web.whatsapp.com",
         "tik tok": "https://www.tiktok.com",
+        "tiktok": "https://www.tiktok.com",
         "e-mail": "https://mail.google.com",
         "email": "https://mail.google.com"
     }
@@ -1132,7 +1132,7 @@ padroes = [
      lambda m, u: parar_gravacao_sistema()),
     
     # Abrir sites e aplicativos
-    (re.compile(r'\b(iniciar|abrir|executar)\s+(youtube|netflix|microsoft teams|github|instagram|tik\s*tok|e-?mail|email|whatsapp)\b', re.IGNORECASE), 
+    (re.compile(r'\b(iniciar|abrir|executar)\s+(youtube|netflix|microsoft teams|github|instagram|tik\s*tok|tiktok|e-?mail|email|whatsapp)\b', re.IGNORECASE), 
      abrir_site),
     
     (re.compile(r'\b(executar|abrir|iniciar)\s+(notepad|google|brave|word|excel|powerpoint|vscode|explorador|prompt|powershell)\b', re.IGNORECASE), 
@@ -1203,12 +1203,12 @@ padroes = [
 
 # ========== Enhanced Command Processor ==========
 def processar_comando(comando, username, modo='texto'):
-    """Processa comandos sem passar o parâmetro 'modo' para as funções"""
+    """Processa comandos"""
     for padrao, acao in padroes:
         match = padrao.search(comando)
         if match:
             try:
-                resultado = acao(match, username)  # Remove o parâmetro 'modo'
+                resultado = acao(match, username)
                 
                 if modo == 'voz':
                     falar(resultado)
