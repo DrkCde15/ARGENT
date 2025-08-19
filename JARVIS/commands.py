@@ -753,14 +753,15 @@ def atualizar_apps(match=None, username=None):
 def abrir_site(match, username):
     comando = match.group(0).lower()
     sites = {
-        "github": "https://github.com/DrkCde15",
-        "netflix": "https://www.netflix.com/browse",
+        "github": "https://github.com/",
+        "netflix": "https://www.netflix.com",
         "youtube": "https://youtube.com",
-        "microsoft teams": "https://teams.microsoft.com/v2/",
-        "instagram": "https://www.instagram.com/jc_v05/",
-        "whatsapp": "https://web.whatsapp.com/",
-        "tik tok": "https://www.tiktok.com/@bx_329",
-        "e-mail": "https://mail.google.com/mail/u/1/#inbox",
+        "microsoft teams": "https://teams.microsoft.com",
+        "instagram": "https://www.instagram.com",
+        "whatsapp": "https://web.whatsapp.com",
+        "tik tok": "https://www.tiktok.com",
+        "e-mail": "https://mail.google.com",
+        "email": "https://mail.google.com"
     }
     for nome, url in sites.items():
         if nome in comando:
@@ -941,7 +942,16 @@ def criar_codigo(match, username):
         "c": ".c",
         "cpp": ".cpp",
         "go": ".go",
-        "php": ".php"
+        "php": ".php",
+        "ruby": ".rb",
+        "kotlin": ".kt",
+        "swift": ".swift",
+        "rust": ".rs",
+        "csharp": ".cs",
+        "c#": ".cs",
+        "css": ".css",
+        "sql": ".sql",
+        "r": ".r"
     }
     ext = extensoes.get(linguagem, ".txt")
     nome_arquivo = input("Nome do arquivo (sem extensão)? ").strip() + ext
@@ -1128,7 +1138,7 @@ padroes = [
     (re.compile(r'\b(executar|abrir|iniciar)\s+(notepad|google|brave|word|excel|powerpoint|vscode|explorador|prompt|powershell)\b', re.IGNORECASE), 
      abrir_aplicativo),
     
-    # Atualizar aplicativos
+    # Atualizar a lista de aplicativos
     (re.compile(r'\b(atualizar|atualizar\s+apps|atualizar\s+aplicativos)\b', re.IGNORECASE), atualizar_apps),
     
     # Analisar imagens
