@@ -1,10 +1,10 @@
-# 🤖 JARVIS – Seu Assistente Pessoal com IA  
+# 🤖 A.R.G.E.N.T – Seu Assistente Pessoal com IA  
 *Automação, produtividade e inteligência, tudo em um só lugar!*  
 
 ---
 
 ## 📖 Sobre o Projeto
-O **JARVIS** é um assistente pessoal inteligente desenvolvido em **Python** com integração à **IA Generativa (Gemini)**, suporte a **comandos de voz e texto** e múltiplas automações que facilitam o seu dia a dia(criação de agenda, instalação de programas, etc).
+O **ARGENT** é um assistente pessoal inteligente desenvolvido em **Python** com integração à **IA Generativa (Gemini)**, suporte a **comandos de voz e texto** e múltiplas automações que facilitam o seu dia a dia(criação de agenda, instalação de programas, etc).
 
 Seja para abrir aplicativos, analisar arquivos, criar códigos, enviar mensagens no WhatsApp ou até executar comandos administrativos no Windows — o JARVIS faz tudo com agilidade e inteligência.
 
@@ -49,6 +49,6 @@ pip install -r requirements.txt
 
 
 ## Júlio Cesar
-- Desenvolvedor e entusiasta de IA, automação e segurança da informação.
+- Desenvolvedor e entusiasta de IA, automação, ciência de dados e segurança da informação.
 - Contato: jcesarsantana215@gmail.com
 - LinkedIn: https://www.linkedin.com/in/julio-santana-ads/
