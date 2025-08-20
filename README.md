@@ -6,7 +6,7 @@
 ## 📖 Sobre o Projeto
 O **ARGENT** é um assistente pessoal inteligente desenvolvido em **Python** com integração à **IA Generativa (Gemini)**, suporte a **comandos de voz e texto** e múltiplas automações que facilitam o seu dia a dia(criação de agenda, instalação de programas, etc).
 
-Seja para abrir aplicativos, analisar arquivos, criar códigos, enviar mensagens no WhatsApp ou até executar comandos administrativos no Windows — o ARGENT faz tudo com agilidade e inteligência.
+Seja para abrir aplicativos, analisar arquivos, criar códigos, instalar programas ou até executar comandos administrativos no Windows — o ARGENT faz tudo com agilidade e inteligência.
 
 ---
 
