@@ -24,7 +24,9 @@ Seja para abrir aplicativos, analisar arquivos, criar códigos, enviar mensagens
 ✅ **Notificador de Tarefas** – Com alerta e verificação de pendências na agenda.  
 
 ---
-
+# Vídeos
+    Acesse o link: https://drive.google.com/drive/folders/1KJnEGUXj4hc3oLkeB7XSb5aOEYUPtKsB?usp=drive_link
+---
 ## 📦 Tecnologias Utilizadas
 
 - **Python**
