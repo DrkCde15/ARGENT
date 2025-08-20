@@ -1,5 +1,5 @@
-# 🤖 A.R.G.E.N.T – Seu Assistente Pessoal com IA  
-*Automação, produtividade e inteligência, tudo em um só lugar!*  
+# 🤖 A.R.G.E.N.T. — Advanced Responsive General-purpose Engineering & Neural Tool 
+*Automação, produtividade, inteligência, tudo em um só lugar!*  
 
 ---
 
