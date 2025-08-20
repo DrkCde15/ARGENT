@@ -173,10 +173,10 @@ def modo_texto(username):
             else:
                 resposta = processar_comando(comando, username, modo='texto')
                 if resposta:
-                    print("JARVIS:", resposta)
+                    print("ARGENT:", resposta)
                 else:
                     resposta_gemini = responder_com_gemini(comando, username)
-                    print("JARVIS:", resposta_gemini)
+                    print("ARGENT:", resposta_gemini)
         except KeyboardInterrupt:
             print("\nDigite 'sair' para encerrar ou continue comandando.")
         except Exception as e:
@@ -293,7 +293,7 @@ def main():
                 username = novo_username
                 print(f"Sessão atualizada para o usuário: {username}")
         elif escolha == "sair":
-            falar("Encerrando JARVIS.")
+            falar("Encerrando ARGENT.")
             break
         else:
             print("Opção inválida.")
